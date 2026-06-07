@@ -13,10 +13,38 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install dependencies
+    
+    - name: Checkout frontend repository
+      uses: actions/checkout@v4
+      with:
+        repository: mohamedsayah97/Final_year_project-Frontend
+        path: frontend
+    
+    - name: Install frontend dependencies
+      run: cd frontend && npm install
+    
+    - name: Start frontend app
+      run: cd frontend && npm run dev &
+    
+    - name: Wait for app to be ready
+      run: |
+        for i in {1..30}; do
+          if curl -f http://localhost:5173 > /dev/null 2>&1; then
+            echo "App is ready"
+            exit 0
+          fi
+          echo "Waiting for app... ($i/30)"
+          sleep 2
+        done
+        echo "App failed to start"
+        exit 1
+    
+    - name: Install test dependencies
       run: npm install
+    
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+    
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v4
